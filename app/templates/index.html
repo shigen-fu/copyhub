@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard Manager</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+        }
+        textarea {
+            resize: none;
+        }
+        .alert-message {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #28a745;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Clipboard Manager</h1>
+
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" id="new-tab" data-toggle="tab" href="#new-form">New Clipboard</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="extract-tab" data-toggle="tab" href="#extract-form">Extract Clipboard</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- New Clipboard Form -->
+            <div id="new-form" class="tab-pane fade show active">
+                <div class="form-group">
+                    <label for="new-data">Enter Text:</label>
+                    <textarea id="new-data" class="form-control" rows="5"></textarea>
+                </div>
+                <div class="text-center">
+                    <button id="save-btn" class="btn btn-success">Save</button>
+                </div>
+            </div>
+
+            <!-- Extract Clipboard Form -->
+            <div id="extract-form" class="tab-pane fade">
+                <div class="form-group">
+                    <label for="extract-code">Enter Code:</label>
+                    <input type="text" id="extract-code" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="extracted-data">Clipboard Content:</label>
+                    <textarea id="extracted-data" class="form-control" rows="5" readonly></textarea>
+                </div>
+                <button id="copy-btn" class="btn btn-primary btn-block">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Message -->
+    <div id="alert-message" class="alert-message"></div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 保存剪贴板内容
+            $('#save-btn').click(function() {
+                var data = $('#new-data').val();
+                $.post('/new', {data: data}, function(response) {
+                    console.log(response);
+                    showSuccessMessage('Your clipboard saved successfully');
+                    $('#new-data').val(response.data);
+                    $('#save-btn').attr('disabled', true);
+                });
+            });
+
+            // 提取剪贴板内容
+            $('#extract-code').change(function() {
+                var code = $(this).val();
+                $.get('/get', {code: code}, function(response) {
+                    $('#extracted-data').val(response.data);
+                });
+            });
+
+            // 复制剪贴板内容
+            $('#copy-btn').click(function() {
+                var textarea = document.getElementById('extracted-data');
+                textarea.select();
+                document.execCommand('copy');
+                showSuccessMessage('Copied to clipboard!');
+            });
+
+            // 显示复制成功提示消息
+            function showSuccessMessage(text) {
+                var message = $('#alert-message');
+                message.text(text).fadeIn(300).delay(1500).fadeOut(400);
+            }
+        });
+    </script>
+</body>
+</html>
